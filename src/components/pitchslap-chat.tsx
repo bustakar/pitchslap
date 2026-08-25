@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import {
   fetchServerSentEvents,
   localStoragePersistence,
   useChat,
 } from '@tanstack/ai-react'
 import type { UIMessage } from '@tanstack/ai-react'
-import { ArrowUp, CircleHelp, Search, Square, Trash2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowUp,
+  CircleHelp,
+  Search,
+  Square,
+  Trash2,
+} from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import 'streamdown/styles.css'
 
@@ -55,30 +63,28 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
   return (
     <article
       className={cn(
-        'message',
-        `message-${message.role}`,
-        verdict && 'message-verdict',
+        'chat-message',
+        `chat-message-${message.role}`,
+        verdict && 'chat-message-verdict',
       )}
     >
-      <div className="message-label">
+      <div className="chat-message-label">
         <span>
           {message.role === 'user'
-            ? 'FOUNDER STATEMENT'
+            ? 'YOU'
             : verdict
-              ? 'TARGET DISPOSITION'
-              : 'INTERROGATOR'}
+              ? 'THE VERDICT'
+              : 'PITCHSLAP'}
         </span>
-        <span>
-          {message.role === 'user' ? 'INPUT' : active ? 'LIVE' : 'FILED'}
-        </span>
+        <span>{message.role === 'assistant' && active ? 'TYPING…' : ''}</span>
       </div>
       {searched && (
         <div className="research-flag">
-          <Search aria-hidden="true" /> WEB RECON DEPLOYED
+          <Search aria-hidden="true" /> Checking the market
         </div>
       )}
       {message.role === 'assistant' ? (
-        <div className="prose-terminal">
+        <div className="chat-prose">
           <Streamdown isAnimating={active}>{text}</Streamdown>
         </div>
       ) : (
@@ -90,7 +96,6 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
 
 export function PitchslapChat() {
   const [input, setInput] = useState('')
-  const [booted, setBooted] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const connection = useMemo(() => fetchServerSentEvents('/api/chat'), [])
@@ -106,11 +111,9 @@ export function PitchslapChat() {
 
   useEffect(() => {
     setHydrated(true)
-    const timer = window.setTimeout(() => setBooted(true), 850)
     void import('botid/client/core').then(({ initBotId }) => {
       initBotId({ protect: [{ path: '/api/chat', method: 'POST' }] })
     })
-    return () => window.clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -135,22 +138,16 @@ export function PitchslapChat() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="app-shell">
-      <div
-        className={cn('boot-screen', booted && 'boot-screen-done')}
-        aria-hidden="true"
-      >
-        <span>PITCHSLAP SYSTEMS</span>
-        <span>OFFICE-HOURS MODULE........ONLINE</span>
-        <span>OPTIMISM FILTER............ARMED</span>
-      </div>
-
-      <header className="site-header">
-        <a className="wordmark" href="/" aria-label="Pitchslap home">
-          PITCH<span>SLAP</span>
-          <small>.XYZ</small>
-        </a>
-        <div className="header-actions">
+    <div className="chat-page">
+      <header className="chat-header">
+        <Link className="brand-lockup" to="/" aria-label="Pitchslap home">
+          <span className="brand-burst">P!</span>
+          <span>pitchslap</span>
+        </Link>
+        <span className="chat-status">
+          <i /> OFFICE HOURS OPEN
+        </span>
+        <div className="chat-header-actions">
           {hasMessages && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -160,11 +157,11 @@ export function PitchslapChat() {
                   size="sm"
                   onClick={eraseCase}
                 >
-                  <Trash2 aria-hidden="true" /> ERASE CASE
+                  <Trash2 aria-hidden="true" /> Start over
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Deletes this case from this browser.
+                Delete this chat from this browser.
               </TooltipContent>
             </Tooltip>
           )}
@@ -186,21 +183,20 @@ export function PitchslapChat() {
             </Tooltip>
             <DialogContent className="about-dialog">
               <DialogHeader>
-                <DialogTitle>PITCHSLAP IS NOT MAGIC.</DialogTitle>
+                <DialogTitle>No magic tricks.</DialogTitle>
                 <DialogDescription>
-                  It is an OpenAI API call with one office-hours skill and a
-                  suspicious amount of amber CSS.
+                  Pitchslap is an OpenAI API call with one office-hours skill.
                 </DialogDescription>
               </DialogHeader>
               <Separator />
               <div className="about-copy">
                 <p>
-                  No account. No database. Your case file stays in this browser
-                  and survives reloads.
+                  No account. No database. This chat stays in your browser and
+                  survives reloads.
                 </p>
                 <p>
-                  Your messages are sent to OpenAI to generate answers. Erase
-                  Case deletes the local transcript.
+                  Your messages go to OpenAI to generate answers. Start over
+                  deletes the local transcript.
                 </p>
               </div>
             </DialogContent>
@@ -208,38 +204,27 @@ export function PitchslapChat() {
         </div>
       </header>
 
-      <main className={cn('terminal', hasMessages && 'terminal-active')}>
+      <main className={cn('chat-stage', hasMessages && 'chat-stage-active')}>
         {!hasMessages ? (
-          <section className="intake" aria-labelledby="intake-title">
-            <div className="eyebrow">
-              <span /> UNVALIDATED OBJECT DETECTED
-            </div>
-            <h1 id="intake-title">
-              YOUR IDEA IS
-              <br />
-              <em>PROBABLY WRONG.</em>
-            </h1>
-            <p className="lede">Good. Finding out now is cheaper.</p>
-            <div className="protocol-grid" aria-label="Interrogation protocol">
-              <div>
-                <b>01</b>
-                <span>State the idea</span>
-              </div>
-              <div>
-                <b>02</b>
-                <span>Face evidence</span>
-              </div>
-              <div>
-                <b>03</b>
-                <span>Run one test</span>
-              </div>
-            </div>
+          <section className="chat-intro" aria-labelledby="chat-title">
+            <Link className="back-home" to="/">
+              <ArrowLeft aria-hidden="true" /> Back to the sales pitch
+            </Link>
+            <span className="chat-kicker">YOUR TURN, FOUNDER</span>
+            <h1 id="chat-title">Okay. Pitch me.</h1>
+            <p>
+              Give me the idea, who has the problem, and why your solution wins.
+              Rough is fine. Vague is not.
+            </p>
           </section>
         ) : (
-          <section className="transcript" aria-label="Interrogation transcript">
+          <section
+            className="chat-transcript"
+            aria-label="Office hours transcript"
+          >
             <div className="case-heading">
-              <span>CASE 001 / ACTIVE</span>
-              <span>LOCAL RECORD</span>
+              <span>YOUR CURRENT IDEA</span>
+              <span>SAVED IN THIS BROWSER</span>
             </div>
             {messages.map((message, index) => (
               <Message
@@ -254,16 +239,16 @@ export function PitchslapChat() {
             ))}
             {isLoading && messages.at(-1)?.role !== 'assistant' && (
               <div className="thinking-line">
-                INTERROGATOR IS REVIEWING THE EVIDENCE<span>_</span>
+                Judging your assumptions<span>…</span>
               </div>
             )}
             <div ref={bottomRef} />
           </section>
         )}
 
-        <section className="composer" aria-label="Message composer">
+        <section className="chat-composer" aria-label="Message composer">
           <div className="composer-topline">
-            <span>SUBMIT STATEMENT</span>
+            <span>YOUR PITCH</span>
             <span>{input.length}/4000</span>
           </div>
           <Textarea
@@ -277,14 +262,14 @@ export function PitchslapChat() {
                 void submit()
               }
             }}
-            placeholder="Describe the company before optimism contaminates the record."
+            placeholder="We help [specific person] solve [painful problem] by…"
             aria-label="Describe your startup idea"
           />
           <div className="composer-footer">
             <span>ENTER TO SEND · SHIFT+ENTER FOR NEW LINE</span>
             {isLoading ? (
               <Button className="send-button" onClick={stop}>
-                <Square aria-hidden="true" /> ABORT
+                <Square aria-hidden="true" /> Stop
               </Button>
             ) : (
               <Button
@@ -292,7 +277,7 @@ export function PitchslapChat() {
                 disabled={!input.trim()}
                 onClick={() => void submit()}
               >
-                {hasMessages ? 'RESPOND' : 'BEGIN INTERROGATION'}{' '}
+                {hasMessages ? 'Send' : 'Slap it'}{' '}
                 <ArrowUp aria-hidden="true" />
               </Button>
             )}
@@ -315,21 +300,15 @@ export function PitchslapChat() {
 
         {error && (
           <div className="error-banner" role="alert">
-            TRANSMISSION FAILED. The terminal may be missing its API key or the
-            network is down.
+            Couldn't reach Pitchslap. The API key may be missing, or the network
+            is down.
           </div>
         )}
       </main>
 
-      <footer>
-        <span>OPENAI API + OFFICE-HOURS. THAT’S LITERALLY IT.</span>
-        <a
-          href="https://github.com/bustakar/pitchslap"
-          target="_blank"
-          rel="noreferrer"
-        >
-          SOURCE CODE ↗
-        </a>
+      <footer className="chat-footer">
+        <span>OpenAI API + office-hours. That's literally it.</span>
+        <span>Your chat stays in this browser.</span>
       </footer>
     </div>
   )

@@ -8,10 +8,10 @@ importers:
 
   .:
     dependencies:
-      '@fontsource/ibm-plex-mono':
+      '@fontsource/coiny':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/michroma':
+      '@fontsource/dm-sans':
         specifier: ^5.3.0
         version: 5.3.0
       '@tailwindcss/vite':
@@ -319,11 +319,11 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@fontsource/ibm-plex-mono@5.3.0':
-    resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
+  '@fontsource/coiny@5.3.0':
+    resolution: {integrity: sha512-l0KHH1SqIngBsQcZAsHujZldFMA+oMNSX/FJbIZCYtfRoHbXZPOa2xe6oPIxu7ye8JZI2fotbml3tqiF8myL/w==}
 
-  '@fontsource/michroma@5.3.0':
-    resolution: {integrity: sha512-9sbGD7ek1hGvq0TmgNPFbuI3k7qwXVdZ+zCDsTHDGRIQqfYrpYWwEYcwH2fzOtvn8uiGqzAoJ72vuFE3v/hDdg==}
+  '@fontsource/dm-sans@5.3.0':
+    resolution: {integrity: sha512-lYJtMXXO28q1z+yz+z8XKd0s4hXaa9QdkETzkyD760sidCv5heI86weYA0sx0Nc4pAMAQTUuyf4gO44cYKKS9g==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -4280,9 +4280,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fontsource/ibm-plex-mono@5.3.0': {}
+  '@fontsource/coiny@5.3.0': {}
 
-  '@fontsource/michroma@5.3.0': {}
+  '@fontsource/dm-sans@5.3.0': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

@@ -1,9 +1,10 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { Analytics } from '@vercel/analytics/react'
-import '@fontsource/ibm-plex-mono/latin-400.css'
-import '@fontsource/ibm-plex-mono/latin-500.css'
-import '@fontsource/ibm-plex-mono/latin-600.css'
-import '@fontsource/michroma/latin-400.css'
+import '@fontsource/coiny/latin-400.css'
+import '@fontsource/dm-sans/latin-400.css'
+import '@fontsource/dm-sans/latin-500.css'
+import '@fontsource/dm-sans/latin-600.css'
+import '@fontsource/dm-sans/latin-700.css'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 
@@ -20,7 +21,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Pitchslap — Validate your startup before reality does',
+        title: 'Pitchslap | Your pitch needs a slap',
       },
       {
         name: 'description',
@@ -29,7 +30,7 @@ export const Route = createRootRoute({
       },
       {
         property: 'og:title',
-        content: 'Pitchslap — Your idea is probably wrong',
+        content: 'Pitchslap | Your pitch needs a slap',
       },
       {
         property: 'og:description',
