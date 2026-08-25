@@ -41,7 +41,6 @@ export const Route = createFileRoute('/api/chat')({
           ],
           modelOptions: {
             reasoning: { effort: 'low' },
-            verbosity: 'low',
             max_output_tokens: 2_400,
             store: false,
             include: ['web_search_call.action.sources'],
