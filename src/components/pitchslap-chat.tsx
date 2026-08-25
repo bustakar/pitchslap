@@ -33,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { deserializeChatState } from '@/lib/chat-persistence'
 import { cn } from '@/lib/utils'
 
 const STARTERS = [
@@ -95,23 +96,52 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
 }
 
 export function PitchslapChat() {
-  const [input, setInput] = useState('')
-  const [hydrated, setHydrated] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const connection = useMemo(() => fetchServerSentEvents('/api/chat'), [])
-  const persistence = useMemo(
-    () => localStoragePersistence({ keyPrefix: 'pitchslap:' }),
-    [],
-  )
-  const { messages, sendMessage, isLoading, error, stop, clear } = useChat(
-    hydrated
-      ? { connection, persistence, threadId: CHAT_THREAD, queue: 'drop' }
-      : { connection, queue: 'drop' },
-  )
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setHydrated(true)
+    setMounted(true)
   }, [])
+
+  if (!mounted) return <div className="chat-page" aria-hidden="true" />
+
+  return <BrowserChat />
+}
+
+function BrowserChat() {
+  const [input, setInput] = useState('')
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const pendingMessagesRef = useRef<Array<UIMessage> | null>(null)
+  const pendingInputRef = useRef('')
+  const connection = useMemo(() => fetchServerSentEvents('/api/chat'), [])
+  const persistence = useMemo(
+    () =>
+      localStoragePersistence({
+        keyPrefix: 'pitchslap:',
+        deserialize: deserializeChatState,
+      }),
+    [],
+  )
+  const { messages, sendMessage, isLoading, error, stop, clear, setMessages } =
+    useChat({
+      connection,
+      persistence,
+      threadId: CHAT_THREAD,
+      queue: 'drop',
+      onFinish: () => {
+        pendingMessagesRef.current = null
+        pendingInputRef.current = ''
+      },
+    })
+
+  useEffect(() => {
+    const previousMessages = pendingMessagesRef.current
+    if (!error || !previousMessages) return
+
+    setMessages(previousMessages)
+    setInput(pendingInputRef.current)
+    pendingMessagesRef.current = null
+    pendingInputRef.current = ''
+  }, [error, setMessages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
@@ -122,6 +152,8 @@ export function PitchslapChat() {
   async function submit() {
     const content = input.trim()
     if (!content || isLoading) return
+    pendingMessagesRef.current = messages
+    pendingInputRef.current = content
     setInput('')
     await sendMessage(content)
   }
@@ -297,8 +329,8 @@ export function PitchslapChat() {
 
         {error && (
           <div className="error-banner" role="alert">
-            Couldn't reach Pitchslap. The API key may be missing, or the network
-            is down.
+            Couldn't reach Pitchslap. Your pitch is back in the box, so you can
+            retry it.
           </div>
         )}
       </main>
