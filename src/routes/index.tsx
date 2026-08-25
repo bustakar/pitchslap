@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowDown, ArrowRight, Check, Search, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { captureAnalyticsEvent } from '@/lib/analytics'
 
 const pageTitle = 'Pitchslap | Your pitch needs a slap'
 const description =
@@ -91,6 +92,10 @@ const steps = [
 ]
 
 function Home() {
+  const trackChatClick = (placement: 'nav' | 'hero' | 'final') => {
+    captureAnalyticsEvent('landing_cta_clicked', { placement })
+  }
+
   return (
     <div className="landing-page">
       <nav className="landing-nav" aria-label="Main navigation">
@@ -101,7 +106,7 @@ function Home() {
         <div className="nav-side">
           <span className="honesty-chip">API + 1 SKILL</span>
           <Button className="nav-cta" asChild>
-            <Link to="/chat">
+            <Link to="/chat" onClick={() => trackChatClick('nav')}>
               Slap my idea <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
@@ -125,7 +130,7 @@ function Home() {
             </p>
             <div className="hero-actions">
               <Button className="hero-cta" size="lg" asChild>
-                <Link to="/chat">
+                <Link to="/chat" onClick={() => trackChatClick('hero')}>
                   Slap my idea <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
@@ -225,7 +230,7 @@ function Home() {
             Let's test the damn thing.
           </h2>
           <Button className="final-button" size="lg" asChild>
-            <Link to="/chat">
+            <Link to="/chat" onClick={() => trackChatClick('final')}>
               Enter office hours <ArrowRight aria-hidden="true" />
             </Link>
           </Button>

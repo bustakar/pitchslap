@@ -5,6 +5,7 @@ import { hasPaidAccess } from './billing'
 
 const STRIPE_CUSTOMER_KEY = 'stripe_customer_id'
 const WORKOS_USER_KEY = 'workos_user_id'
+const POSTHOG_PERSON_KEY = 'posthog_person_distinct_id'
 
 export type BillingUser = {
   id: string
@@ -110,7 +111,10 @@ async function getOrCreateCustomer(user: BillingUser): Promise<string> {
     {
       email: user.email,
       name: user.name ?? undefined,
-      metadata: { [WORKOS_USER_KEY]: user.id },
+      metadata: {
+        [WORKOS_USER_KEY]: user.id,
+        [POSTHOG_PERSON_KEY]: user.id,
+      },
     },
     { idempotencyKey: `pitchslap-customer-${user.id}` },
   )
@@ -173,8 +177,16 @@ export async function createCheckoutUrl(
     allow_promotion_codes: true,
     success_url: `${origin}/chat?checkout=success`,
     cancel_url: `${origin}/chat?checkout=cancelled`,
-    metadata: { [WORKOS_USER_KEY]: user.id },
-    subscription_data: { metadata: { [WORKOS_USER_KEY]: user.id } },
+    metadata: {
+      [WORKOS_USER_KEY]: user.id,
+      [POSTHOG_PERSON_KEY]: user.id,
+    },
+    subscription_data: {
+      metadata: {
+        [WORKOS_USER_KEY]: user.id,
+        [POSTHOG_PERSON_KEY]: user.id,
+      },
+    },
   })
 
   if (!session.url) throw new Error('Stripe did not return a Checkout URL.')

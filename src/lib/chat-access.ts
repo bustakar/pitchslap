@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 
 export type ChatViewer = {
+  id: string
   email: string
   name: string | null
 }
@@ -28,12 +29,13 @@ export type ChatAccess =
   | { state: 'unavailable'; user: ChatViewer }
 
 function viewerFromUser(user: {
+  id: string
   email: string
   firstName?: string | null
   lastName?: string | null
 }): ChatViewer {
   const name = [user.firstName, user.lastName].filter(Boolean).join(' ')
-  return { email: user.email, name: name || null }
+  return { id: user.id, email: user.email, name: name || null }
 }
 
 export const getChatAccess = createServerFn({ method: 'GET' }).handler(

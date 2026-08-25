@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { isSameOriginRequest } from '@/lib/billing'
 import { createCheckoutUrl, requestOrigin } from '@/lib/billing.server'
+import { captureServerEvent } from '@/lib/posthog.server'
 
 export const Route = createFileRoute('/api/billing/checkout')({
   server: {
@@ -21,6 +22,12 @@ export const Route = createFileRoute('/api/billing/checkout')({
         }
 
         const url = await createCheckoutUrl(user, requestOrigin(request))
+        await captureServerEvent({
+          distinctId: user.id,
+          event: 'checkout_started',
+          properties: { plan: 'monthly', price_usd: 9.99 },
+          request,
+        })
         return Response.redirect(url, 303)
       },
     },

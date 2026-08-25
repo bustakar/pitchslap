@@ -58,9 +58,11 @@ function PrivacyPage() {
 
       <h2>Site usage</h2>
       <p>
-        Pitchslap's hosting and analytics providers may process technical
-        information such as your IP address, browser, device, and pages visited
-        to deliver and secure the service.
+        Pitchslap records page visits, referral and campaign parameters, button
+        clicks, checkout starts, and chat actions to understand acquisition and
+        improve the service. Chat event tracking does not include your pitch or
+        response text. Hosting and analytics providers may also process
+        technical information such as your IP address, browser, and device.
       </p>
 
       <h2>Sharing and retention</h2>

@@ -31,6 +31,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  captureAnalyticsEvent,
+  captureAnalyticsException,
+  identifyAnalyticsUser,
+  resetAnalytics,
+} from '@/lib/analytics'
 import type { ChatAccess, StoredChatMessage } from '@/lib/chat-access'
 import { formatUsageBalance } from '@/lib/usage-pricing'
 import { cn } from '@/lib/utils'
@@ -71,7 +77,7 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
   return (
     <article
       className={cn(
-        'chat-message',
+        'chat-message ph-no-capture',
         `chat-message-${message.role}`,
         verdict && 'chat-message-verdict',
       )}
@@ -105,6 +111,11 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
 }
 
 export function PitchslapChat({ access }: { access: ChatAccess }) {
+  useEffect(() => {
+    if (!('user' in access)) return
+    identifyAnalyticsUser(access.user)
+  }, [access])
+
   if (access.state !== 'paid') return <AccessGate access={access} />
 
   return <PaidChat access={access} />
@@ -154,7 +165,7 @@ function AccessGate({
         </span>
         {!signedOut && (
           <Button className="erase-button" variant="ghost" size="sm" asChild>
-            <a href="/api/auth/sign-out">
+            <a href="/api/auth/sign-out" onClick={resetAnalytics}>
               <LogOut aria-hidden="true" /> Sign out
             </a>
           </Button>
@@ -344,10 +355,23 @@ function AccountChat({
       initialMessages,
       threadId: CHAT_THREAD,
       queue: 'drop',
-      onFinish: () => {
+      onFinish: (message) => {
+        const searched =
+          message.metadata?.searched === true ||
+          message.parts.some(
+            (part) => part.type === 'tool-call' && part.name === 'web_search',
+          )
+        captureAnalyticsEvent('chat_response_completed', {
+          response_characters: textFromMessage(message).length,
+          searched_market: searched,
+        })
         pendingMessagesRef.current = null
         pendingInputRef.current = ''
         void refreshBalance()
+      },
+      onError: (chatError) => {
+        captureAnalyticsEvent('chat_request_failed')
+        captureAnalyticsException(chatError)
       },
     })
 
@@ -388,6 +412,13 @@ function AccountChat({
     if (!content || isLoading) return
     pendingMessagesRef.current = messages
     pendingInputRef.current = content
+    const userMessageCount = messages.filter(
+      (message) => message.role === 'user',
+    ).length
+    captureAnalyticsEvent('chat_message_sent', {
+      is_first_message: userMessageCount === 0,
+      message_number: userMessageCount + 1,
+    })
     setInput('')
     await sendMessage(content)
   }
@@ -489,7 +520,11 @@ function AccountChat({
                 size="icon-sm"
                 asChild
               >
-                <a href="/api/auth/sign-out" aria-label="Sign out">
+                <a
+                  href="/api/auth/sign-out"
+                  aria-label="Sign out"
+                  onClick={resetAnalytics}
+                >
                   <LogOut aria-hidden="true" />
                 </a>
               </Button>
@@ -516,7 +551,12 @@ function AccountChat({
                   <Button
                     key={starter}
                     variant="ghost"
-                    onClick={() => setInput(starter)}
+                    onClick={() => {
+                      setInput(starter)
+                      captureAnalyticsEvent('chat_starter_selected', {
+                        starter_position: STARTERS.indexOf(starter) + 1,
+                      })
+                    }}
                   >
                     {starter}
                   </Button>
@@ -560,6 +600,7 @@ function AccountChat({
               <span>{input.length}/4000</span>
             </div>
             <Textarea
+              className="ph-no-capture"
               value={input}
               maxLength={4000}
               rows={3}
