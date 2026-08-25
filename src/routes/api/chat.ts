@@ -8,7 +8,6 @@ import { openaiText } from '@tanstack/ai-openai'
 import { webSearchTool } from '@tanstack/ai-openai/tools'
 import { createFileRoute } from '@tanstack/react-router'
 import type {} from '@tanstack/react-start'
-import { checkBotId } from 'botid/server'
 
 import { validateChatHistory } from '@/lib/chat-guard'
 import { SYSTEM_PROMPT } from '@/lib/office-hours'
@@ -21,20 +20,6 @@ export const Route = createFileRoute('/api/chat')({
           return Response.json(
             { error: 'Pitchslap is waiting for its OpenAI API key.' },
             { status: 503 },
-          )
-        }
-
-        const verification = await checkBotId({
-          developmentOptions: {
-            isDevelopment: process.env.NODE_ENV !== 'production',
-          },
-          advancedOptions: { headers: Object.fromEntries(request.headers) },
-        })
-
-        if (verification.isBot) {
-          return Response.json(
-            { error: 'Interrogation denied.' },
-            { status: 403 },
           )
         }
 

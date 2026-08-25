@@ -10,7 +10,7 @@ It is intentionally small: one streamed chat, one server-only skill, native web 
 - TanStack AI with OpenAI Responses API (`gpt-5.4-mini`)
 - Tailwind CSS 4 and shadcn/ui primitives
 - Streamdown for streaming-safe Markdown
-- Vercel BotID and Web Analytics
+- Vercel Web Analytics
 - Vitest
 - Vercel hosting
 

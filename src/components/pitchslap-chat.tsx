@@ -111,9 +111,6 @@ export function PitchslapChat() {
 
   useEffect(() => {
     setHydrated(true)
-    void import('botid/client/core').then(({ initBotId }) => {
-      initBotId({ protect: [{ path: '/api/chat', method: 'POST' }] })
-    })
   }, [])
 
   useEffect(() => {
