@@ -233,106 +233,109 @@ function BrowserChat() {
         </div>
       </header>
 
-      <main className={cn('chat-stage', hasMessages && 'chat-stage-active')}>
-        {!hasMessages ? (
-          <section className="chat-intro" aria-labelledby="chat-title">
-            <Link className="back-home" to="/">
-              <ArrowLeft aria-hidden="true" /> Back to the sales pitch
-            </Link>
-            <span className="chat-kicker">YOUR TURN, FOUNDER</span>
-            <h1 id="chat-title">Okay. Pitch me.</h1>
-            <p>
-              Give me the idea, who has the problem, and why your solution wins.
-              Rough is fine. Vague is not.
-            </p>
-          </section>
-        ) : (
-          <section
-            className="chat-transcript"
-            aria-label="Office hours transcript"
-          >
-            <div className="case-heading">
-              <span>YOUR CURRENT IDEA</span>
-              <span>SAVED IN THIS BROWSER</span>
-            </div>
-            {messages.map((message, index) => (
-              <Message
-                key={message.id}
-                message={message}
-                active={
-                  isLoading &&
-                  index === messages.length - 1 &&
-                  message.role === 'assistant'
-                }
-              />
-            ))}
-            {isLoading && messages.at(-1)?.role !== 'assistant' && (
-              <div className="thinking-line">
-                Judging your assumptions<span>…</span>
+      <main className="chat-stage">
+        <div className="chat-scroll-area">
+          {!hasMessages ? (
+            <div className="chat-empty-state">
+              <section className="chat-intro" aria-labelledby="chat-title">
+                <Link className="back-home" to="/">
+                  <ArrowLeft aria-hidden="true" /> Back to the sales pitch
+                </Link>
+                <span className="chat-kicker">YOUR TURN, FOUNDER</span>
+                <h1 id="chat-title">Okay. Pitch me.</h1>
+                <p>
+                  Give me the idea, who has the problem, and why your solution
+                  wins. Rough is fine. Vague is not.
+                </p>
+              </section>
+              <div className="starter-row" aria-label="Example openings">
+                {STARTERS.map((starter) => (
+                  <Button
+                    key={starter}
+                    variant="ghost"
+                    onClick={() => setInput(starter)}
+                  >
+                    {starter}
+                  </Button>
+                ))}
               </div>
-            )}
-            <div ref={bottomRef} />
+            </div>
+          ) : (
+            <section
+              className="chat-transcript"
+              aria-label="Office hours transcript"
+            >
+              <div className="case-heading">
+                <span>YOUR CURRENT IDEA</span>
+                <span>SAVED IN THIS BROWSER</span>
+              </div>
+              {messages.map((message, index) => (
+                <Message
+                  key={message.id}
+                  message={message}
+                  active={
+                    isLoading &&
+                    index === messages.length - 1 &&
+                    message.role === 'assistant'
+                  }
+                />
+              ))}
+              {isLoading && messages.at(-1)?.role !== 'assistant' && (
+                <div className="thinking-line">
+                  Judging your assumptions<span>…</span>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </section>
+          )}
+        </div>
+
+        <div className="chat-dock">
+          <section className="chat-composer" aria-label="Message composer">
+            <div className="composer-topline">
+              <span>YOUR PITCH</span>
+              <span>{input.length}/4000</span>
+            </div>
+            <Textarea
+              value={input}
+              maxLength={4000}
+              rows={3}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  void submit()
+                }
+              }}
+              placeholder="We help [specific person] solve [painful problem] by…"
+              aria-label="Describe your startup idea"
+            />
+            <div className="composer-footer">
+              <span>ENTER TO SEND · SHIFT+ENTER FOR NEW LINE</span>
+              {isLoading ? (
+                <Button className="send-button" onClick={stop}>
+                  <Square aria-hidden="true" /> Stop
+                </Button>
+              ) : (
+                <Button
+                  className="send-button"
+                  disabled={!input.trim()}
+                  onClick={() => void submit()}
+                >
+                  {hasMessages ? 'Send' : 'Slap it'}{' '}
+                  <ArrowUp aria-hidden="true" />
+                </Button>
+              )}
+            </div>
           </section>
-        )}
 
-        <section className="chat-composer" aria-label="Message composer">
-          <div className="composer-topline">
-            <span>YOUR PITCH</span>
-            <span>{input.length}/4000</span>
-          </div>
-          <Textarea
-            value={input}
-            maxLength={4000}
-            rows={3}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault()
-                void submit()
-              }
-            }}
-            placeholder="We help [specific person] solve [painful problem] by…"
-            aria-label="Describe your startup idea"
-          />
-          <div className="composer-footer">
-            <span>ENTER TO SEND · SHIFT+ENTER FOR NEW LINE</span>
-            {isLoading ? (
-              <Button className="send-button" onClick={stop}>
-                <Square aria-hidden="true" /> Stop
-              </Button>
-            ) : (
-              <Button
-                className="send-button"
-                disabled={!input.trim()}
-                onClick={() => void submit()}
-              >
-                {hasMessages ? 'Send' : 'Slap it'}{' '}
-                <ArrowUp aria-hidden="true" />
-              </Button>
-            )}
-          </div>
-        </section>
-
-        {!hasMessages && (
-          <div className="starter-row" aria-label="Example openings">
-            {STARTERS.map((starter) => (
-              <Button
-                key={starter}
-                variant="ghost"
-                onClick={() => setInput(starter)}
-              >
-                {starter}
-              </Button>
-            ))}
-          </div>
-        )}
-
-        {error && (
-          <div className="error-banner" role="alert">
-            Couldn't reach Pitchslap. Your pitch is back in the box, so you can
-            retry it.
-          </div>
-        )}
+          {error && (
+            <div className="error-banner" role="alert">
+              Couldn't reach Pitchslap. Your pitch is back in the box, so you
+              can retry it.
+            </div>
+          )}
+        </div>
       </main>
 
       <footer className="chat-footer">

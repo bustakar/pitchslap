@@ -30,7 +30,7 @@ export const Route = createFileRoute('/api/chat')({
         }
 
         const stream = chat({
-          adapter: openaiText('gpt-5.4-mini'),
+          adapter: openaiText('gpt-5.6-luna'),
           messages: params.messages,
           systemPrompts: [SYSTEM_PROMPT],
           tools: [
