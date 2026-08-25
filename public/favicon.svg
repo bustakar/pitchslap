@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M11 13c9-9 31-10 41 0 8 9 7 31-2 40-9 8-31 7-39-3-8-10-8-28 0-37Z" fill="#17131f"/>
+  <path d="M8 9c9-9 31-10 41 0 8 9 7 31-2 40-9 8-31 7-39-3-8-10-8-28 0-37Z" fill="#ffd632" stroke="#17131f" stroke-width="3"/>
+  <text x="29" y="39" fill="#17131f" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="25" font-weight="900" text-anchor="middle">P!</text>
+</svg>

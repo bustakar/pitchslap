@@ -6,8 +6,6 @@ import '@fontsource/dm-sans/latin-500.css'
 import '@fontsource/dm-sans/latin-600.css'
 import '@fontsource/dm-sans/latin-700.css'
 
-import { TooltipProvider } from '@/components/ui/tooltip'
-
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
@@ -21,26 +19,34 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Pitchslap | Your pitch needs a slap',
-      },
-      {
-        name: 'description',
-        content:
-          'A blunt AI office-hours agent that pressure-tests startup ideas and gives you one concrete validation experiment.',
-      },
-      {
-        property: 'og:title',
-        content: 'Pitchslap | Your pitch needs a slap',
-      },
-      {
-        property: 'og:description',
-        content: 'Submit your startup idea for interrogation.',
+        name: 'theme-color',
+        content: '#ffd632',
       },
     ],
     links: [
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'icon',
+        href: '/favicon.svg',
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'icon',
+        href: '/favicon-32x32.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+      {
+        rel: 'apple-touch-icon',
+        href: '/apple-touch-icon.png',
+        sizes: '180x180',
+      },
+      {
+        rel: 'manifest',
+        href: '/site.webmanifest',
       },
     ],
   }),
@@ -54,7 +60,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <TooltipProvider>{children}</TooltipProvider>
+        {children}
         <Analytics />
         <Scripts />
       </body>

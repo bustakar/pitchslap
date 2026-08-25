@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   fetchServerSentEvents,
@@ -14,7 +14,6 @@ import {
   Square,
   Trash2,
 } from 'lucide-react'
-import { Streamdown } from 'streamdown'
 import 'streamdown/styles.css'
 
 import { Button } from '@/components/ui/button'
@@ -31,6 +30,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { deserializeChatState } from '@/lib/chat-persistence'
@@ -43,6 +43,11 @@ const STARTERS = [
 ]
 
 const CHAT_THREAD = 'case-file'
+
+const Streamdown = lazy(async () => {
+  const module = await import('streamdown')
+  return { default: module.Streamdown }
+})
 
 function textFromMessage(message: UIMessage) {
   return message.parts
@@ -86,7 +91,9 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
       )}
       {message.role === 'assistant' ? (
         <div className="chat-prose">
-          <Streamdown isAnimating={active}>{text}</Streamdown>
+          <Suspense fallback={<p className="whitespace-pre-wrap">{text}</p>}>
+            <Streamdown isAnimating={active}>{text}</Streamdown>
+          </Suspense>
         </div>
       ) : (
         <p className="whitespace-pre-wrap">{text}</p>
@@ -102,9 +109,88 @@ export function PitchslapChat() {
     setMounted(true)
   }, [])
 
-  if (!mounted) return <div className="chat-page" aria-hidden="true" />
+  if (!mounted) return <ChatLoadingShell />
 
-  return <BrowserChat />
+  return (
+    <TooltipProvider>
+      <BrowserChat />
+    </TooltipProvider>
+  )
+}
+
+function ChatLoadingShell() {
+  return (
+    <div className="chat-page">
+      <header className="chat-header">
+        <Link className="brand-lockup" to="/" aria-label="Pitchslap home">
+          <span className="brand-burst">P!</span>
+          <span>pitchslap</span>
+        </Link>
+        <span className="chat-status">
+          <i /> OFFICE HOURS OPEN
+        </span>
+        <Button
+          className="info-button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="About Pitchslap"
+        >
+          <CircleHelp aria-hidden="true" />
+        </Button>
+      </header>
+
+      <main className="chat-stage">
+        <div className="chat-scroll-area">
+          <div className="chat-empty-state">
+            <section className="chat-intro" aria-labelledby="chat-title">
+              <Link className="back-home" to="/">
+                <ArrowLeft aria-hidden="true" /> Back to the sales pitch
+              </Link>
+              <span className="chat-kicker">YOUR TURN, FOUNDER</span>
+              <h1 id="chat-title">Okay. Pitch me.</h1>
+              <p>
+                Give me the idea, who has the problem, and why your solution
+                wins. Rough is fine. Vague is not.
+              </p>
+            </section>
+            <div className="starter-row" aria-label="Example openings">
+              {STARTERS.map((starter) => (
+                <Button key={starter} variant="ghost">
+                  {starter}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="chat-dock">
+          <section className="chat-composer" aria-label="Message composer">
+            <div className="composer-topline">
+              <span>YOUR PITCH</span>
+              <span>0/4000</span>
+            </div>
+            <Textarea
+              rows={3}
+              readOnly
+              placeholder="We help [specific person] solve [painful problem] by…"
+              aria-label="Describe your startup idea"
+            />
+            <div className="composer-footer">
+              <span>ENTER TO SEND · SHIFT+ENTER FOR NEW LINE</span>
+              <Button className="send-button" disabled>
+                Slap it <ArrowUp aria-hidden="true" />
+              </Button>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer className="chat-footer">
+        <span>OpenAI API + office-hours. That's literally it.</span>
+        <span>Your chat stays in this browser.</span>
+      </footer>
+    </div>
+  )
 }
 
 function BrowserChat() {

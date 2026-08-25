@@ -3,7 +3,67 @@ import { ArrowDown, ArrowRight, Check, Search, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
-export const Route = createFileRoute('/')({ component: Home })
+const pageTitle = 'Pitchslap | Your pitch needs a slap'
+const description =
+  'Pressure-test your startup idea with blunt AI office hours, current market research, and one concrete validation experiment.'
+
+export const Route = createFileRoute('/')({
+  head: () => ({
+    meta: [
+      { title: pageTitle },
+      { name: 'description', content: description },
+      {
+        name: 'robots',
+        content: 'index, follow, max-image-preview:large',
+      },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:site_name', content: 'Pitchslap' },
+      { property: 'og:title', content: pageTitle },
+      { property: 'og:description', content: description },
+      { property: 'og:url', content: 'https://pitchslap.xyz/' },
+      {
+        property: 'og:image',
+        content: 'https://pitchslap.xyz/assets/pitchslap-og.png',
+      },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { property: 'og:image:type', content: 'image/png' },
+      {
+        property: 'og:image:alt',
+        content: 'Pitchslap, your startup pitch needs a slap',
+      },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: pageTitle },
+      { name: 'twitter:description', content: description },
+      {
+        name: 'twitter:image',
+        content: 'https://pitchslap.xyz/assets/pitchslap-og.png',
+      },
+      {
+        name: 'twitter:image:alt',
+        content: 'Pitchslap, your startup pitch needs a slap',
+      },
+      {
+        'script:ld+json': {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'Pitchslap',
+          url: 'https://pitchslap.xyz/',
+          description,
+          applicationCategory: 'BusinessApplication',
+          operatingSystem: 'Any',
+          offers: {
+            '@type': 'Offer',
+            price: 0,
+            priceCurrency: 'USD',
+          },
+        },
+      },
+    ],
+    links: [{ rel: 'canonical', href: 'https://pitchslap.xyz/' }],
+  }),
+  component: Home,
+})
 
 const steps = [
   {
@@ -87,7 +147,13 @@ function Home() {
             <div className="sticker sticker-receipts">SHOW RECEIPTS</div>
             <img
               src="/assets/pitchslap-mascot.webp"
+              srcSet="/assets/pitchslap-mascot-480.webp 480w, /assets/pitchslap-mascot-720.webp 720w, /assets/pitchslap-mascot-960.webp 960w, /assets/pitchslap-mascot.webp 1254w"
+              sizes="(max-width: 680px) 92vw, (max-width: 980px) 72vw, min(720px, 57vw)"
               alt="A cartoon pitch deck carrying an oversized verdict stamp"
+              width="1254"
+              height="1254"
+              fetchPriority="high"
+              decoding="async"
             />
           </div>
         </section>
