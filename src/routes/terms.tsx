@@ -41,16 +41,17 @@ function TermsPage() {
 
       <h2>Subscription and cancellation</h2>
       <p>
-        Pitchslap costs $9.99 USD per month. Stripe charges the subscription
-        automatically until you cancel it. You can cancel through the customer
-        portal, and access continues through the end of the paid billing period.
-        Fees are non-refundable except where the law requires otherwise.
+        Pitchslap costs $9.99 USD per month. The payment provider charges the
+        subscription automatically until you cancel it. You can cancel through
+        the billing portal, and access continues through the end of the paid
+        billing period. Fees are non-refundable except where the law requires
+        otherwise.
       </p>
 
       <h2>API balance and usage</h2>
       <p>
         Each successful subscription payment adds a non-cash API balance equal
-        to Stripe's actual processor net for that payment, less Stripe Billing's
+        to the actual processor net for that payment, less the billing service's
         0.7% fee. The exact amount varies by payment method and currency. The
         balance rolls over, has no cash value, cannot be transferred, and is
         reduced by measured OpenAI model and web-search usage. Pitchslap blocks

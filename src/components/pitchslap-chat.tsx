@@ -3,7 +3,6 @@ import { Link } from '@tanstack/react-router'
 import { fetchServerSentEvents, useChat } from '@tanstack/ai-react'
 import type { UIMessage } from '@tanstack/ai-react'
 import {
-  ArrowLeft,
   ArrowUp,
   CircleHelp,
   CreditCard,
@@ -171,7 +170,7 @@ function AccessGate({
             {signedOut
               ? 'Sign in. Get slapped.'
               : unavailable
-                ? 'Stripe went quiet.'
+                ? 'Billing went quiet.'
                 : unconfigured
                   ? 'The till is not open yet.'
                   : 'Enter office hours.'}
@@ -189,7 +188,7 @@ function AccessGate({
           {signedOut ? (
             <Button className="access-button" size="lg" asChild>
               <a href="/api/auth/sign-in?returnPathname=/chat">
-                Continue with WorkOS <ArrowUp aria-hidden="true" />
+                Continue securely <ArrowUp aria-hidden="true" />
               </a>
             </Button>
           ) : unavailable || unconfigured ? (
@@ -204,14 +203,14 @@ function AccessGate({
               </div>
               <ul className="access-list">
                 <li>
-                  <ShieldCheck aria-hidden="true" /> Stripe net loaded as API
+                  <ShieldCheck aria-hidden="true" /> Net payment loaded as API
                   balance
                 </li>
                 <li>
                   <Search aria-hidden="true" /> Live market research
                 </li>
                 <li>
-                  <CreditCard aria-hidden="true" /> Cancel anytime in Stripe
+                  <CreditCard aria-hidden="true" /> Cancel anytime in billing
                 </li>
               </ul>
               <form method="post" action="/api/billing/checkout">
@@ -232,7 +231,7 @@ function AccessGate({
       </main>
 
       <footer className="chat-footer">
-        <span>Identity by WorkOS. Billing by Stripe.</span>
+        <span>Secure sign-in and billing.</span>
         <span>Your case file follows your account.</span>
       </footer>
     </div>
@@ -264,9 +263,6 @@ function ChatLoadingShell() {
         <div className="chat-scroll-area">
           <div className="chat-empty-state">
             <section className="chat-intro" aria-labelledby="chat-title">
-              <Link className="back-home" to="/">
-                <ArrowLeft aria-hidden="true" /> Back to the sales pitch
-              </Link>
               <span className="chat-kicker">YOUR TURN, FOUNDER</span>
               <h1 id="chat-title">Okay. Pitch me.</h1>
               <p>
@@ -475,8 +471,8 @@ function AccountChat({
               <Separator />
               <div className="about-copy">
                 <p>
-                  Your account is handled by WorkOS and billing by Stripe. The
-                  case file and usage ledger are stored by Pitchslap in Convex.
+                  Sign-in and billing are handled securely. Pitchslap stores
+                  your case file and usage balance with your account.
                 </p>
                 <p>
                   Your messages go to OpenAI to generate answers. Start over
@@ -508,9 +504,6 @@ function AccountChat({
           {!hasMessages ? (
             <div className="chat-empty-state">
               <section className="chat-intro" aria-labelledby="chat-title">
-                <Link className="back-home" to="/">
-                  <ArrowLeft aria-hidden="true" /> Back to the sales pitch
-                </Link>
                 <span className="chat-kicker">YOUR TURN, FOUNDER</span>
                 <h1 id="chat-title">Okay. Pitch me.</h1>
                 <p>

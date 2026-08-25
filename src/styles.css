@@ -855,21 +855,6 @@ a {
   margin-bottom: clamp(1.5rem, 4vh, 3rem);
 }
 
-.back-home {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 2.3rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.back-home:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
 .chat-kicker {
   display: inline-flex;
   padding: 0.45rem 0.65rem;
