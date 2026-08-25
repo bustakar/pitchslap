@@ -54,8 +54,9 @@ export const Route = createFileRoute('/')({
           operatingSystem: 'Any',
           offers: {
             '@type': 'Offer',
-            price: 0,
+            price: 9.99,
             priceCurrency: 'USD',
+            url: 'https://pitchslap.xyz/chat',
           },
         },
       },
@@ -135,7 +136,7 @@ function Home() {
               </Button>
             </div>
             <p className="micro-proof">
-              No signup. No database. No pitch-deck theatre.
+              $9.99/month. Cancel anytime. No pitch-deck theatre.
             </p>
           </div>
 
@@ -228,6 +229,7 @@ function Home() {
               Enter office hours <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
+          <p className="final-price">$9.99/month · cancel anytime</p>
         </section>
       </main>
 
@@ -237,13 +239,17 @@ function Home() {
           <span>pitchslap</span>
         </Link>
         <span>Built in public. Optimism sold separately.</span>
-        <a
-          href="https://github.com/bustakar/pitchslap"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Source ↗
-        </a>
+        <div className="footer-links">
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/terms">Terms</Link>
+          <a
+            href="https://github.com/bustakar/pitchslap"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Source ↗
+          </a>
+        </div>
       </footer>
     </div>
   )

@@ -10,7 +10,10 @@ import {
   ArrowLeft,
   ArrowUp,
   CircleHelp,
+  CreditCard,
+  LogOut,
   Search,
+  ShieldCheck,
   Square,
   Trash2,
 } from 'lucide-react'
@@ -34,6 +37,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { deserializeChatState } from '@/lib/chat-persistence'
+import type { ChatAccess } from '@/lib/chat-access'
 import { cn } from '@/lib/utils'
 
 const STARTERS = [
@@ -102,7 +106,13 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
   )
 }
 
-export function PitchslapChat() {
+export function PitchslapChat({ access }: { access: ChatAccess }) {
+  if (access.state !== 'paid') return <AccessGate access={access} />
+
+  return <PaidChat />
+}
+
+function PaidChat() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -115,6 +125,111 @@ export function PitchslapChat() {
     <TooltipProvider>
       <BrowserChat />
     </TooltipProvider>
+  )
+}
+
+function AccessGate({
+  access,
+}: {
+  access: Exclude<ChatAccess, { state: 'paid' }>
+}) {
+  const signedOut = access.state === 'signed-out'
+  const unavailable = access.state === 'unavailable'
+  const unconfigured = access.state === 'unconfigured'
+
+  return (
+    <div className="chat-page access-page">
+      <header className="chat-header">
+        <Link className="brand-lockup" to="/" aria-label="Pitchslap home">
+          <span className="brand-burst">P!</span>
+          <span>pitchslap</span>
+        </Link>
+        <span className="chat-status">
+          <i /> OFFICE HOURS OPEN
+        </span>
+        {!signedOut && (
+          <Button className="erase-button" variant="ghost" size="sm" asChild>
+            <a href="/api/auth/sign-out">
+              <LogOut aria-hidden="true" /> Sign out
+            </a>
+          </Button>
+        )}
+      </header>
+
+      <main className="access-stage">
+        <section className="access-card" aria-labelledby="access-title">
+          <span className="chat-kicker">
+            {signedOut ? 'IDENTIFY YOURSELF' : 'ONE LAST THING'}
+          </span>
+          <h1 id="access-title">
+            {signedOut
+              ? 'Sign in. Get slapped.'
+              : unavailable
+                ? 'Stripe went quiet.'
+                : unconfigured
+                  ? 'The till is not open yet.'
+                  : 'Enter office hours.'}
+          </h1>
+          <p>
+            {signedOut
+              ? 'Your account unlocks paid office hours. Your actual chat still stays in this browser.'
+              : unavailable
+                ? 'We could not verify your subscription. Your account and chat are safe—try again in a moment.'
+                : unconfigured
+                  ? 'Your account works, but billing has not been connected in this environment yet.'
+                  : 'Pressure-test startup ideas with blunt questions, current market research, and one cheap validation experiment.'}
+          </p>
+
+          {signedOut ? (
+            <Button className="access-button" size="lg" asChild>
+              <a href="/api/auth/sign-in?returnPathname=/chat">
+                Continue with WorkOS <ArrowUp aria-hidden="true" />
+              </a>
+            </Button>
+          ) : unavailable || unconfigured ? (
+            <Button className="access-button" size="lg" asChild>
+              <a href="/chat">Try again</a>
+            </Button>
+          ) : (
+            <>
+              <div className="price-lockup">
+                <strong>$9.99</strong>
+                <span>/ month</span>
+              </div>
+              <ul className="access-list">
+                <li>
+                  <ShieldCheck aria-hidden="true" /> Unlimited office-hours
+                  chats
+                </li>
+                <li>
+                  <Search aria-hidden="true" /> Live market research
+                </li>
+                <li>
+                  <CreditCard aria-hidden="true" /> Cancel anytime in Stripe
+                </li>
+              </ul>
+              <form method="post" action="/api/billing/checkout">
+                <Button className="access-button" size="lg" type="submit">
+                  Start getting slapped <ArrowUp aria-hidden="true" />
+                </Button>
+              </form>
+              {access.hasCustomer && (
+                <form method="post" action="/api/billing/portal">
+                  <Button variant="link" type="submit">
+                    Manage existing billing
+                  </Button>
+                </form>
+              )}
+            </>
+          )}
+        </section>
+      </main>
+
+      <footer className="chat-footer">
+        <span>Identity by WorkOS. Billing by Stripe.</span>
+        <span>Your chat stays in this browser.</span>
+      </footer>
+    </div>
   )
 }
 
@@ -263,6 +378,16 @@ function BrowserChat() {
           <i /> OFFICE HOURS OPEN
         </span>
         <div className="chat-header-actions">
+          <form method="post" action="/api/billing/portal">
+            <Button
+              className="erase-button"
+              variant="ghost"
+              size="sm"
+              type="submit"
+            >
+              <CreditCard aria-hidden="true" /> Billing
+            </Button>
+          </form>
           {hasMessages && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -306,8 +431,8 @@ function BrowserChat() {
               <Separator />
               <div className="about-copy">
                 <p>
-                  No account. No database. This chat stays in your browser and
-                  survives reloads.
+                  Your account is handled by WorkOS and billing by Stripe. The
+                  chat transcript stays in your browser and survives reloads.
                 </p>
                 <p>
                   Your messages go to OpenAI to generate answers. Start over
@@ -316,6 +441,21 @@ function BrowserChat() {
               </div>
             </DialogContent>
           </Dialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="info-button"
+                variant="ghost"
+                size="icon-sm"
+                asChild
+              >
+                <a href="/api/auth/sign-out" aria-label="Sign out">
+                  <LogOut aria-hidden="true" />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Sign out</TooltipContent>
+          </Tooltip>
         </div>
       </header>
 

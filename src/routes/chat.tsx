@@ -1,8 +1,23 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { PitchslapChat } from '@/components/pitchslap-chat'
+import { getChatAccess } from '@/lib/chat-access'
 
 export const Route = createFileRoute('/chat')({
+  loader: async ({ location }) => {
+    const access = await getChatAccess()
+
+    if (access.state === 'signed-out') {
+      const returnPathname = encodeURIComponent(
+        `${location.pathname}${location.searchStr}`,
+      )
+      throw redirect({
+        href: `/api/auth/sign-in?returnPathname=${returnPathname}`,
+      })
+    }
+
+    return access
+  },
   head: () => ({
     meta: [
       { title: 'Startup idea validator | Pitchslap office hours' },
@@ -59,5 +74,9 @@ export const Route = createFileRoute('/chat')({
     ],
     links: [{ rel: 'canonical', href: 'https://pitchslap.xyz/chat' }],
   }),
-  component: PitchslapChat,
+  component: ChatPage,
 })
+
+function ChatPage() {
+  return <PitchslapChat access={Route.useLoaderData()} />
+}
