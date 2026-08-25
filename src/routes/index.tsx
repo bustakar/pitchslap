@@ -106,7 +106,11 @@ function Home() {
         <div className="nav-side">
           <span className="honesty-chip">API + 1 SKILL</span>
           <Button className="nav-cta" asChild>
-            <Link to="/chat" onClick={() => trackChatClick('nav')}>
+            <Link
+              to="/chat"
+              reloadDocument
+              onClick={() => trackChatClick('nav')}
+            >
               Slap my idea <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
@@ -130,7 +134,11 @@ function Home() {
             </p>
             <div className="hero-actions">
               <Button className="hero-cta" size="lg" asChild>
-                <Link to="/chat" onClick={() => trackChatClick('hero')}>
+                <Link
+                  to="/chat"
+                  reloadDocument
+                  onClick={() => trackChatClick('hero')}
+                >
                   Slap my idea <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
@@ -230,7 +238,11 @@ function Home() {
             Let's test the damn thing.
           </h2>
           <Button className="final-button" size="lg" asChild>
-            <Link to="/chat" onClick={() => trackChatClick('final')}>
+            <Link
+              to="/chat"
+              reloadDocument
+              onClick={() => trackChatClick('final')}
+            >
               Enter office hours <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
