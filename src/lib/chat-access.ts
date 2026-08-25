@@ -5,6 +5,14 @@ export type ChatViewer = {
   name: string | null
 }
 
+export type StoredChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  searched: boolean
+  createdAt: number
+}
+
 export type ChatAccess =
   | { state: 'signed-out' }
   | { state: 'unconfigured'; user: ChatViewer }
@@ -14,6 +22,8 @@ export type ChatAccess =
       user: ChatViewer
       subscriptionStatus: string
       cancelAtPeriodEnd: boolean
+      initialMessages: Array<StoredChatMessage>
+      balanceMicros: number
     }
   | { state: 'unavailable'; user: ChatViewer }
 
@@ -32,7 +42,8 @@ export const getChatAccess = createServerFn({ method: 'GET' }).handler(
       import('@workos/authkit-tanstack-react-start'),
       import('./billing.server'),
     ])
-    const { user } = await getAuth()
+    const auth = await getAuth()
+    const { user } = auth
     if (!user) return { state: 'signed-out' }
 
     const viewer = viewerFromUser(user)
@@ -54,11 +65,25 @@ export const getChatAccess = createServerFn({ method: 'GET' }).handler(
           hasCustomer: access.customerId !== null,
         }
       }
+      const { getBackendSnapshot, syncStripeCredit } =
+        await import('./backend.server')
+      let snapshot = await getBackendSnapshot(auth.accessToken)
+      if (!snapshot.hasWallet) {
+        try {
+          await syncStripeCredit(auth.accessToken)
+          snapshot = await getBackendSnapshot(auth.accessToken)
+        } catch (error) {
+          console.error('Unable to sync Stripe credit', error)
+        }
+      }
+
       return {
         state: 'paid',
         user: viewer,
         subscriptionStatus: access.status,
         cancelAtPeriodEnd: access.cancelAtPeriodEnd,
+        initialMessages: snapshot.messages,
+        balanceMicros: snapshot.balanceMicros - snapshot.reservedMicros,
       }
     } catch (error) {
       console.error('Unable to check billing access', error)

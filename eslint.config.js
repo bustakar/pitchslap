@@ -18,6 +18,7 @@ export default [
     ignores: [
       '.output/**',
       '.vercel/**',
+      'convex/_generated/**',
       'eslint.config.js',
       'prettier.config.js',
     ],

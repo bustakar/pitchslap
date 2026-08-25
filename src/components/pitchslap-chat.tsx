@@ -1,10 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  fetchServerSentEvents,
-  localStoragePersistence,
-  useChat,
-} from '@tanstack/ai-react'
+import { fetchServerSentEvents, useChat } from '@tanstack/ai-react'
 import type { UIMessage } from '@tanstack/ai-react'
 import {
   ArrowLeft,
@@ -36,8 +32,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { deserializeChatState } from '@/lib/chat-persistence'
-import type { ChatAccess } from '@/lib/chat-access'
+import type { ChatAccess, StoredChatMessage } from '@/lib/chat-access'
+import { formatUsageBalance } from '@/lib/usage-pricing'
 import { cn } from '@/lib/utils'
 
 const STARTERS = [
@@ -47,6 +43,7 @@ const STARTERS = [
 ]
 
 const CHAT_THREAD = 'case-file'
+const MIN_REQUEST_MICROS = 100_000
 
 const Streamdown = lazy(async () => {
   const module = await import('streamdown')
@@ -62,9 +59,11 @@ function textFromMessage(message: UIMessage) {
 
 function Message({ message, active }: { message: UIMessage; active: boolean }) {
   const text = textFromMessage(message)
-  const searched = message.parts.some(
-    (part) => part.type === 'tool-call' && part.name === 'web_search',
-  )
+  const searched =
+    message.metadata?.searched === true ||
+    message.parts.some(
+      (part) => part.type === 'tool-call' && part.name === 'web_search',
+    )
   const verdict = text.includes('TARGET DISPOSITION:')
 
   if (message.role === 'system') return null
@@ -109,10 +108,14 @@ function Message({ message, active }: { message: UIMessage; active: boolean }) {
 export function PitchslapChat({ access }: { access: ChatAccess }) {
   if (access.state !== 'paid') return <AccessGate access={access} />
 
-  return <PaidChat />
+  return <PaidChat access={access} />
 }
 
-function PaidChat() {
+function PaidChat({
+  access,
+}: {
+  access: Extract<ChatAccess, { state: 'paid' }>
+}) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -123,7 +126,10 @@ function PaidChat() {
 
   return (
     <TooltipProvider>
-      <BrowserChat />
+      <AccountChat
+        storedMessages={access.initialMessages}
+        initialBalanceMicros={access.balanceMicros}
+      />
     </TooltipProvider>
   )
 }
@@ -172,7 +178,7 @@ function AccessGate({
           </h1>
           <p>
             {signedOut
-              ? 'Your account unlocks paid office hours. Your actual chat still stays in this browser.'
+              ? 'Your account unlocks paid office hours and keeps your case file available across devices.'
               : unavailable
                 ? 'We could not verify your subscription. Your account and chat are safe—try again in a moment.'
                 : unconfigured
@@ -198,8 +204,8 @@ function AccessGate({
               </div>
               <ul className="access-list">
                 <li>
-                  <ShieldCheck aria-hidden="true" /> Unlimited office-hours
-                  chats
+                  <ShieldCheck aria-hidden="true" /> Stripe net loaded as API
+                  balance
                 </li>
                 <li>
                   <Search aria-hidden="true" /> Live market research
@@ -227,7 +233,7 @@ function AccessGate({
 
       <footer className="chat-footer">
         <span>Identity by WorkOS. Billing by Stripe.</span>
-        <span>Your chat stays in this browser.</span>
+        <span>Your case file follows your account.</span>
       </footer>
     </div>
   )
@@ -302,37 +308,68 @@ function ChatLoadingShell() {
 
       <footer className="chat-footer">
         <span>OpenAI API + office-hours. That's literally it.</span>
-        <span>Your chat stays in this browser.</span>
+        <span>Your case file follows your account.</span>
       </footer>
     </div>
   )
 }
 
-function BrowserChat() {
+function storedToUiMessage(message: StoredChatMessage): UIMessage {
+  return {
+    id: message.id,
+    role: message.role,
+    parts: [{ type: 'text', content: message.content }],
+    createdAt: new Date(message.createdAt),
+    metadata: { searched: message.searched },
+  }
+}
+
+function AccountChat({
+  storedMessages,
+  initialBalanceMicros,
+}: {
+  storedMessages: Array<StoredChatMessage>
+  initialBalanceMicros: number
+}) {
   const [input, setInput] = useState('')
+  const [balanceMicros, setBalanceMicros] = useState(initialBalanceMicros)
+  const [resetError, setResetError] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const pendingMessagesRef = useRef<Array<UIMessage> | null>(null)
   const pendingInputRef = useRef('')
   const connection = useMemo(() => fetchServerSentEvents('/api/chat'), [])
-  const persistence = useMemo(
-    () =>
-      localStoragePersistence({
-        keyPrefix: 'pitchslap:',
-        deserialize: deserializeChatState,
-      }),
-    [],
+  const initialMessages = useMemo(
+    () => storedMessages.map(storedToUiMessage),
+    [storedMessages],
   )
   const { messages, sendMessage, isLoading, error, stop, clear, setMessages } =
     useChat({
       connection,
-      persistence,
+      initialMessages,
       threadId: CHAT_THREAD,
       queue: 'drop',
       onFinish: () => {
         pendingMessagesRef.current = null
         pendingInputRef.current = ''
+        void refreshBalance()
       },
     })
+
+  async function refreshBalance() {
+    const response = await fetch('/api/chat/state')
+    if (!response.ok) return
+    const snapshot: unknown = await response.json()
+    if (
+      snapshot &&
+      typeof snapshot === 'object' &&
+      'balanceMicros' in snapshot &&
+      'reservedMicros' in snapshot &&
+      typeof snapshot.balanceMicros === 'number' &&
+      typeof snapshot.reservedMicros === 'number'
+    ) {
+      setBalanceMicros(snapshot.balanceMicros - snapshot.reservedMicros)
+    }
+  }
 
   useEffect(() => {
     const previousMessages = pendingMessagesRef.current
@@ -359,13 +396,20 @@ function BrowserChat() {
     await sendMessage(content)
   }
 
-  function eraseCase() {
+  async function eraseCase() {
     stop()
+    setResetError(false)
+    const response = await fetch('/api/chat/state', { method: 'DELETE' })
+    if (!response.ok) {
+      setResetError(true)
+      return
+    }
     clear()
     setInput('')
   }
 
   const hasMessages = messages.length > 0
+  const hasRequestCredit = balanceMicros >= MIN_REQUEST_MICROS
 
   return (
     <div className="chat-page">
@@ -395,13 +439,13 @@ function BrowserChat() {
                   className="erase-button"
                   variant="ghost"
                   size="sm"
-                  onClick={eraseCase}
+                  onClick={() => void eraseCase()}
                 >
                   <Trash2 aria-hidden="true" /> Start over
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Delete this chat from this browser.
+                Delete this case file from your account.
               </TooltipContent>
             </Tooltip>
           )}
@@ -432,11 +476,11 @@ function BrowserChat() {
               <div className="about-copy">
                 <p>
                   Your account is handled by WorkOS and billing by Stripe. The
-                  chat transcript stays in your browser and survives reloads.
+                  case file and usage ledger are stored by Pitchslap in Convex.
                 </p>
                 <p>
                   Your messages go to OpenAI to generate answers. Start over
-                  deletes the local transcript.
+                  deletes the account transcript.
                 </p>
               </div>
             </DialogContent>
@@ -493,7 +537,7 @@ function BrowserChat() {
             >
               <div className="case-heading">
                 <span>YOUR CURRENT IDEA</span>
-                <span>SAVED IN THIS BROWSER</span>
+                <span>SAVED TO YOUR ACCOUNT</span>
               </div>
               {messages.map((message, index) => (
                 <Message
@@ -519,7 +563,7 @@ function BrowserChat() {
         <div className="chat-dock">
           <section className="chat-composer" aria-label="Message composer">
             <div className="composer-topline">
-              <span>YOUR PITCH</span>
+              <span>{formatUsageBalance(balanceMicros)} API LEFT</span>
               <span>{input.length}/4000</span>
             </div>
             <Textarea
@@ -545,7 +589,7 @@ function BrowserChat() {
               ) : (
                 <Button
                   className="send-button"
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || !hasRequestCredit}
                   onClick={() => void submit()}
                 >
                   {hasMessages ? 'Send' : 'Slap it'}{' '}
@@ -555,10 +599,13 @@ function BrowserChat() {
             </div>
           </section>
 
-          {error && (
+          {(error || resetError) && (
             <div className="error-banner" role="alert">
-              Couldn't reach Pitchslap. Your pitch is back in the box, so you
-              can retry it.
+              {resetError
+                ? "Couldn't delete the case file. Nothing was removed."
+                : !hasRequestCredit
+                  ? 'Your API balance is empty. It reloads after your next successful subscription payment.'
+                  : "Couldn't reach Pitchslap. Your pitch is back in the box, so you can retry it."}
             </div>
           )}
         </div>
@@ -566,7 +613,7 @@ function BrowserChat() {
 
       <footer className="chat-footer">
         <span>OpenAI API + office-hours. That's literally it.</span>
-        <span>Your chat stays in this browser.</span>
+        <span>Your case file follows your account.</span>
       </footer>
     </div>
   )

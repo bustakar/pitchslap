@@ -206,7 +206,7 @@ function Home() {
                 <Check aria-hidden="true" /> Current market research
               </li>
               <li>
-                <Check aria-hidden="true" /> Browser-only chat history
+                <Check aria-hidden="true" /> Account-synced case files
               </li>
               <li>
                 <Check aria-hidden="true" /> One concrete validation test

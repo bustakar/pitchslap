@@ -47,6 +47,17 @@ function TermsPage() {
         Fees are non-refundable except where the law requires otherwise.
       </p>
 
+      <h2>API balance and usage</h2>
+      <p>
+        Each successful subscription payment adds a non-cash API balance equal
+        to Stripe's actual processor net for that payment, less Stripe Billing's
+        0.7% fee. The exact amount varies by payment method and currency. The
+        balance rolls over, has no cash value, cannot be transferred, and is
+        reduced by measured OpenAI model and web-search usage. Pitchslap blocks
+        new requests when the remaining balance is too low and may reverse
+        credits for refunds or chargebacks.
+      </p>
+
       <h2>Your content</h2>
       <p>
         You keep ownership of the ideas and text you submit. You allow Pitchslap

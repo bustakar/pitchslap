@@ -42,9 +42,17 @@ function PrivacyPage() {
       <h2>Your chats</h2>
       <p>
         Your messages and the conversation context are sent to OpenAI to
-        generate responses and perform the research you request. Chat history is
-        saved in your browser. Pitchslap does not currently maintain its own
-        chat-history database.
+        generate responses and perform the research you request. Pitchslap
+        stores your account-linked case file in Convex so it survives reloads
+        and is available across your signed-in devices.
+      </p>
+
+      <h2>Credits and usage</h2>
+      <p>
+        Pitchslap stores your API balance and a usage ledger containing model
+        token counts, web-search calls, prices applied, and Stripe invoice
+        references. This lets the service grant subscription credit, deduct
+        actual API usage, and prevent duplicate charges.
       </p>
 
       <h2>Site usage</h2>
@@ -57,15 +65,15 @@ function PrivacyPage() {
       <h2>Sharing and retention</h2>
       <p>
         Pitchslap does not sell personal data. Data is shared with WorkOS,
-        Stripe, OpenAI, and Vercel only as needed to operate the service. Each
-        provider applies its own retention and security practices.
+        Stripe, Convex, OpenAI, and Vercel only as needed to operate the
+        service. Each provider applies its own retention and security practices.
       </p>
 
       <h2>Your choices</h2>
       <p>
-        You can erase local chat history from the chat page, cancel billing in
-        the Stripe customer portal, or request access to or deletion of your
-        account information by emailing{' '}
+        You can erase your case file from the chat page, cancel billing in the
+        Stripe customer portal, or request access to or deletion of your account
+        information by emailing{' '}
         <a href="mailto:hello@karelbusta.dev">hello@karelbusta.dev</a>.
       </p>
 
